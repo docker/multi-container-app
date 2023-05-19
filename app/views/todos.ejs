@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Todo App</title>
+    <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div class="app">
+        <header>
+            <nav class="navbar navbar-dark bg-primary">
+                <span class="navbar-brand mb-0 h1">Todo App</span>
+            </nav>
+        </header>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 m-auto pt-4">
+                    <form method="POST" action="/" autocomplete="off">
+                        <div class="row">
+                            <div class="col-12 form-group">
+                                <label for="todo">Enter your task</label>
+                                <input type="text" name="task" class="form-control" />
+                            </div>
+                        </div>
+                    </form>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <% if(Object.keys(tasks).length> 0) { %>
+                                <ul class="nav flex-column">
+                                    <% tasks.forEach(todo=> { %>
+                                        <li class="nav-item">
+                                            <div class="d-flex justify-content-between py-1">
+                                                <div class="d-flex flex-row">
+                                                    <div>
+                                                        <%= todo.task %>
+                                                            <p class="text-muted"><small>
+                                                                    <%= moment(todo.created_at).fromNow() %>
+                                                                </small></p>
+                                                    </div>
+                                                </div>
+                                                <a href="javascript:;" onclick="this.children[0].submit()"
+                                                    class="text-danger">
+                                                    <form method="POST" action="/todo/destroy">
+                                                        <input type="hidden" name="_key" value="<%= todo._id %>" />
+                                                    </form>
+                                                    <i class="fa fa-trash-o"></i>
+                                                </a>
+                                            </div>
+                                        </li>
+                                        <% }) %>
+                                </ul>
+                                <% } else { %>
+                                    <div class="text-center"><strong>Please add some task.</strong></div>
+                                    <% }%>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
