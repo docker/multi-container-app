@@ -1,5 +1,5 @@
 {
-  "name": "welcome-to-compose",
+  "name": "multi-container-apps",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",

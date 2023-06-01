@@ -1,3 +1,3 @@
 module.exports = {
-    mongoProdURI: 'mongodb://welcome-mongo:27017/todoapp',
+    mongoProdURI: 'mongodb://todo-database:27017/todoapp',
 };
