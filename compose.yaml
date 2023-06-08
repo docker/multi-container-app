@@ -19,12 +19,12 @@ services:
       - 3000:3000
 
   todo-database:
-    image: mongo
+    image: mongo:6
     container_name: mongo
     #volumes: 
     #  - database:/data/db
     ports:
-      - "27017:27017"
+      - 27017:27017
 
 #volumes:
   #database:
