@@ -21,7 +21,6 @@ services:
 
   todo-database:
     image: mongo:6
-    container_name: mongo
     #volumes: 
     #  - database:/data/db
     ports:
