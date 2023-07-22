@@ -12,7 +12,7 @@ services:
   todo-app:
     build:
       context: ./app
-    links:
+    depends_on:
       - todo-database
     environment:
       NODE_ENV: production
