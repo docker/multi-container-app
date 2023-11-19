@@ -19,7 +19,7 @@ services:
     ports:
       - 3000:3000
       - 35729:35729
-    develop:
+    x-develop:
       watch:
         - path: ./app/package.json
           action: rebuild
