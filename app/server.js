@@ -13,7 +13,7 @@ liveReloadServer.server.once("connection", () => {
     }, 100);
 });
 
-// Fontend route
+// Frontend route
 const FrontRouter = require('./routes/front');
 
 // Set ejs template engine
