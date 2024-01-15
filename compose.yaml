@@ -29,10 +29,10 @@ services:
 
   todo-database:
     image: mongo:6
-    #volumes: 
-    #  - database:/data/db
+    volumes: 
+      - database:/data/db
     ports:
       - 27017:27017
 
-#volumes:
-  #database:
+volumes:
+  database:
