@@ -19,13 +19,6 @@ services:
     ports:
       - 3000:3000
       - 35729:35729
-    develop:
-      watch:
-        - path: ./app/package.json
-          action: rebuild
-        - path: ./app
-          target: /usr/src/app
-          action: sync
 
   todo-database:
     image: mongo:6
