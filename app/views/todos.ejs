@@ -12,20 +12,32 @@
 </head>
 
 <body>
-    <div class="app">
-        <header>
-            <nav class="navbar navbar-dark bg-primary">
-                <span class="navbar-brand mb-0 h1">Todo App</span>
-            </nav>
-        </header>
-        <div class="container">
-            <div class="row">
-                <div class="col-md-8 m-auto pt-4">
+    <div class="container m-5 p-2 rounded mx-auto bg-light shadow">
+        
+        <!-- App title section -->
+        <div class="row m-1 p-4">
+            <div class="col">
+                <div class="p-1 h1 text-primary text-center mx-auto display-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="50" height="50">
+                        <!-- !Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
+                        <path fill="#185c91" d="M349.9 236.3h-66.1v-59.4h66.1v59.4zm0-204.3h-66.1v60.7h66.1V32zm78.2 144.8H362v59.4h66.1v-59.4zm-156.3-72.1h-66.1v60.1h66.1v-60.1zm78.1 0h-66.1v60.1h66.1v-60.1zm276.8 100c-14.4-9.7-47.6-13.2-73.1-8.4-3.3-24-16.7-44.9-41.1-63.7l-14-9.3-9.3 14c-18.4 27.8-23.4 73.6-3.7 103.8-8.7 4.7-25.8 11.1-48.4 10.7H2.4c-8.7 50.8 5.8 116.8 44 162.1 37.1 43.9 92.7 66.2 165.4 66.2 157.4 0 273.9-72.5 328.4-204.2 21.4 .4 67.6 .1 91.3-45.2 1.5-2.5 6.6-13.2 8.5-17.1l-13.3-8.9zm-511.1-27.9h-66v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm-78.1-72.1h-66.1v60.1h66.1v-60.1z"/></svg>
+                    <u>Todo's</u>
+                </div>
+            </div>
+        </div>
+            <div class="row m-1 p-3">
+                <div class="col col-11 mx-auto">
                     <form method="POST" action="/" autocomplete="off">
-                        <div class="row">
-                            <div class="col-12 form-group">
-                                <label for="todo">Enter your task</label>
-                                <input type="text" name="task" class="form-control" />
+                        <div class="row m-1 p-3">
+                            <div class="col col-11 mx-auto">
+                                <div class="row bg-white rounded shadow-sm p-2 add-todo-wrapper align-items-center justify-content-center">
+                                    <div class="col">
+                                        <input class="form-control form-control-lg border-0 add-todo-input bg-transparent rounded" type="text" name="task" placeholder="Add new Task">
+                                    </div>
+                                    <div class="col-auto px-0 mx-0 mr-2">
+                                        <button type="submit" class="btn btn-primary">Add</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </form>
