@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Multi Container App</title>
+    <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+    <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="../globals.css" />
+</head>
+    <body>
+        <div class="container m-5 p-2 rounded mx-auto bg-light shadow">
+            
+            <!-- App title section -->
+            <div class="row m-1 p-4">
+                <div class="col">
+                    <div class="p-1 h1 text-primary text-center mx-auto display-inline-block">
+                        <u>Multi Container App</u>
+                    </div>
+                </div>
+            </div>
+                <div class="row m-1 p-3">
+                    <div class="col col-11 mx-auto">
+                        <h2>Login</h2>
+                        <form method="POST" action="/" autocomplete="off">
+                            <div class="row m-1 p-3">
+                                <div class="col col-11 mx-auto">
+                                    <div class="row bg-white rounded shadow-sm p-2 add-todo-wrapper align-items-center justify-content-center">
+                                        <div class="col">
+                                            <input class="form-control form-control-lg border-0 add-todo-input bg-transparent rounded" type="text" name="email" placeholder="Email...">
+                                        </div>
+                                        <div class="col-auto px-0 mx-0 mr-2">
+                                            <button type="submit" class="btn btn-primary">Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <hr>
+                        <div class="row">
+                            <div class="col-12">
+                                <% if(Object.keys(tasks).length> 0) { %>
+                                    <ul class="nav flex-column">
+                                        <% tasks.forEach(todo=> { %>
+                                            <li class="nav-item">
+                                                <div class="d-flex justify-content-between py-1">
+                                                    <div class="d-flex flex-row">
+                                                        <div>
+                                                            <%= todo.task %>
+                                                                <p class="text-muted"><small>
+                                                                        <%= moment(todo.created_at).fromNow() %>
+                                                                    </small></p>
+                                                        </div>
+                                                    </div>
+                                                    <a href="javascript:;" onclick="this.children[0].submit()"
+                                                        class="text-danger">
+                                                        <form method="POST" action="/todo/destroy">
+                                                            <input type="hidden" name="_key" value="<%= todo._id %>" />
+                                                        </form>
+                                                        <i class="fa fa-trash-o"></i>
+                                                    </a>
+                                                </div>
+                                            </li>
+                                            <% }) %>
+                                    </ul>
+                                    <% } else { %>
+                                        <div class="text-center"><strong>Add A new task.</strong></div>
+                                        <% }%>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    
+    </html>
+
+
