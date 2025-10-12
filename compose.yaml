@@ -15,7 +15,7 @@ services:
     depends_on:
       - todo-database
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
     ports:
       - 3000:3000
       - 35729:35729

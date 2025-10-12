@@ -9,7 +9,7 @@ ARG NODE_VERSION=19.5.0
 FROM node:${NODE_VERSION}-alpine
 
 # Use production node environment by default.
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 
 WORKDIR /usr/src/app
@@ -38,4 +38,4 @@ USER node
 EXPOSE 3000
 
 # Run the application in dev mode to use with Compose watch feature
-CMD npm run dev
+CMD ["nodemon", "server.js"]
