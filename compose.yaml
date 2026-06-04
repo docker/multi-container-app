@@ -28,7 +28,7 @@ services:
           action: sync
 
   todo-database:
-    image: mongo:6
+    image: mongo:7
     #volumes: 
     #  - database:/data/db
     ports:
