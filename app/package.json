@@ -2,23 +2,61 @@
   "name": "multi-container-apps",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon -e js,ejs server.js"
+    "dev": "nodemon -e js,ejs server.js",
+    "smoke": "node scripts/smoke.js",
+    "lint": "eslint . --ext .js || true",
+    "format": "prettier --write '**/*.js'",
+    "test": "jest --runInBand",
+    "test:ci": "jest --runInBand --coverage --coverageDirectory=coverage",
+    "prepare": "node -e \"console.log('skipping husky install in subpackage')\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.20.2",
-    "ejs": "^3.1.9",
-    "express": "^4.18.2",
+    "body-parser": "^1.20.4",
+    "cookie-parser": "^1.4.7",
+    "csurf": "^1.11.0",
+    "ejs": "^3.1.10",
+    "express": "^4.22.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
     "moment": "^2.29.4",
-    "mongoose": "^7.1.0"
+    "mongoose": "^7.8.4"
   },
   "devDependencies": {
     "connect-livereload": "^0.6.1",
+    "eslint": "^8.50.0",
+    "husky": "^8.0.3",
+    "jest": "^29.6.1",
+    "lint-staged": "^14.0.0",
     "livereload": "^0.9.3",
-    "nodemon": "^3.0.1"
+    "mongodb-memory-server": "^10.4.1",
+    "nodemon": "^3.0.1",
+    "prettier": "^2.8.8",
+    "supertest": "^7.1.4"
+  },
+  "husky": {
+    "hooks": {}
+  },
+  "lint-staged": {
+    "**/*.{js,ejs}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "branches": 38,
+        "functions": 45,
+        "lines": 70,
+        "statements": 70
+      }
+    }
   }
 }

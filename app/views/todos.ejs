@@ -42,29 +42,58 @@
                     <div class="row">
                         <div class="col-12">
                             <% if(Object.keys(tasks).length> 0) { %>
-                                <ul class="nav flex-column">
+                                <ul class="nav flex-column" role="list" aria-label="Todo list">
                                     <% tasks.forEach(todo=> { %>
                                         <li class="nav-item">
-                                            <div class="d-flex justify-content-between py-1">
-                                                <div class="d-flex flex-row">
-                                                    <div>
-                                                        <%= todo.task %>
-                                                            <p class="text-muted"><small>
-                                                                    <%= moment(todo.created_at).fromNow() %>
-                                                                </small></p>
+                                            <div class="d-flex justify-content-between py-1 align-items-center" aria-live="polite">
+                                                <div class="d-flex flex-row align-items-center">
+                                                    <form method="POST" action="/todo/toggle" aria-label="Toggle task completion">
+                                                        <input type="hidden" name="_key" value="<%= todo._id %>" />
+                                                        <input type="checkbox" name="completed" onchange="this.form.submit()" <%= todo.completed ? 'checked' : '' %> aria-label="Mark task as <%= todo.completed ? 'incomplete' : 'completed' %>">
+                                                    </form>
+                                                    <div class="ml-2">
+                                                        <span <%= todo.completed ? 'style="text-decoration: line-through; color: #888;"' : '' %>><%= todo.task %></span>
+                                                        <p class="text-muted mb-0"><small>
+                                                            <%= moment(todo.created_at).fromNow() %>
+                                                        </small></p>
+                                                        <span class="badge badge-<%= todo.completed ? 'success' : 'secondary' %> ml-1" aria-label="Task status">
+                                                            <%= todo.completed ? 'Completed' : 'Pending' %>
+                                                        </span>
                                                     </div>
                                                 </div>
-                                                <a href="javascript:;" onclick="this.children[0].submit()"
-                                                    class="text-danger">
-                                                    <form method="POST" action="/todo/destroy">
+                                                <a href="#" class="text-info mr-2" onclick="document.getElementById('edit-form-<%= todo._id %>').style.display='block';return false;" aria-label="Edit task">
+                                                    <i class="fa fa-pencil" aria-hidden="true"></i>
+                                                </a>
+                                                <form id="edit-form-<%= todo._id %>" method="POST" action="/todo/edit" style="display:none;" class="form-inline" aria-label="Edit task form">
+                                                    <input type="hidden" name="_key" value="<%= todo._id %>" />
+                                                    <input type="text" name="task" value="<%= todo.task %>" class="form-control form-control-sm mr-2" aria-label="Edit task input">
+                                                    <button type="submit" class="btn btn-success btn-sm" aria-label="Save edit">Save</button>
+                                                    <button type="button" class="btn btn-secondary btn-sm" onclick='this.parentElement.style.display="none";return false;' aria-label="Cancel edit">Cancel</button>
+                                                </form>
+                                                <a href="javascript:;" onclick="this.children[0].submit()" class="text-danger" aria-label="Delete task">
+                                                    <form method="POST" action="/todo/destroy" aria-label="Delete task form">
                                                         <input type="hidden" name="_key" value="<%= todo._id %>" />
                                                     </form>
-                                                    <i class="fa fa-trash-o"></i>
+                                                    <i class="fa fa-trash-o" aria-hidden="true"></i>
                                                 </a>
                                             </div>
                                         </li>
                                         <% }) %>
                                 </ul>
+                                <% 
+                                const hasCompletedTasks = tasks.some && tasks.some(todo => todo.completed);
+                                if (hasCompletedTasks) { 
+                                %>
+                                <div class="row mt-3">
+                                    <div class="col-12 text-center">
+                                        <form method="POST" action="/todo/clear-completed" onsubmit="return confirm('Are you sure you want to delete all completed tasks?');" aria-label="Clear all completed tasks">
+                                            <button type="submit" class="btn btn-danger btn-sm" aria-label="Clear completed tasks">
+                                                <i class="fa fa-trash" aria-hidden="true"></i> Clear Completed
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <% } %>
                                 <% } else { %>
                                     <div class="text-center"><strong>Please add some task.</strong></div>
                                     <% }%>
@@ -74,6 +103,41 @@
             </div>
         </div>
     </div>
-</body>
+<script>
+// AJAX for toggling completion
+document.querySelectorAll('form[action="/todo/toggle"] input[type="checkbox"]').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function(e) {
+        var form = this.form;
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action, true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                location.reload(); // For simplicity, reload to reflect changes
+            }
+        };
+        var params = '_key=' + encodeURIComponent(form._key.value);
+        xhr.send(params);
+        e.preventDefault();
+    });
+});
 
+// AJAX for editing tasks
+document.querySelectorAll('form[action="/todo/edit"]').forEach(function(editForm) {
+    editForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', editForm.action, true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                location.reload(); // For simplicity, reload to reflect changes
+            }
+        };
+        var params = '_key=' + encodeURIComponent(editForm._key.value) + '&task=' + encodeURIComponent(editForm.task.value);
+        xhr.send(params);
+    });
+});
+</script>
+</body>
 </html>

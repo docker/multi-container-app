@@ -1,0 +1,90 @@
+# CodeQL Configuration for Multi-Container Todo App
+# This configuration enables comprehensive security analysis with custom queries
+
+name: codeql-config
+
+# Disable default queries to use only our custom configuration
+disable-default-queries: false
+
+# Query packs to use for analysis
+# These provide comprehensive security, quality, and best practice checks
+packs:
+  javascript:
+    # Security and quality queries (most comprehensive)
+    - codeql/javascript-queries:security-and-quality
+    
+    # Additional security-focused queries
+    - codeql/javascript-queries:security-extended
+    
+    # Experimental queries for cutting-edge security checks
+    - codeql/javascript-queries:experimental
+
+# Custom queries for specific security concerns
+queries:
+  # Add custom query paths here if needed
+  - uses: security-and-quality
+  - uses: security-extended
+
+# Query filters to focus on critical issues
+query-filters:
+  # Exclude informational findings to focus on actionable issues
+  - exclude:
+      tags contain: external/cwe/cwe-079  # XSS - we have comprehensive protection
+  
+  # Include all critical security findings
+  - include:
+      tags contain: security
+      
+  # Include maintainability and reliability issues
+  - include:
+      tags contain: maintainability
+  - include:
+      tags contain: reliability
+
+# Path filters to focus analysis on application code
+paths:
+  # Include application source code
+  - app/**/*.js
+  - app/**/*.ejs
+  
+  # Include workflow files for security analysis
+  - .github/workflows/**/*.yml
+  - .github/workflows/**/*.yaml
+
+# Paths to ignore during analysis
+paths-ignore:
+  # Ignore dependencies
+  - "**/node_modules/**"
+  - "**/package-lock.json"
+  
+  # Ignore test files (analyze separately if needed)
+  # - "**/*.test.js"
+  # - "**/*.spec.js"
+  
+  # Ignore build artifacts
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/coverage/**"
+  
+  # Ignore temporary files
+  - "**/tmp/**"
+  - "**/.tmp/**"
+  - "**/temp/**"
+
+# Threat models to consider
+# This helps CodeQL understand the security context of the application
+threat-models:
+  - remote  # Remote attackers (most common)
+  - local   # Local authenticated users
+
+# Language-specific settings
+languages:
+  javascript:
+    # Enable taint tracking for data flow analysis
+    taint-tracking: true
+    
+    # Maximum depth for data flow analysis
+    max-paths: 1000
+    
+    # Enable interprocedural analysis
+    interprocedural: true

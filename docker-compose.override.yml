@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  todo-app:
+    # Use bind mounts in local development so code changes are picked up
+    volumes:
+      - ./app:/usr/src/app:cached
+    environment:
+      NODE_ENV: development
+      LIVERELOAD: "true"
+    ports:
+      - "3000:3000"
+      - "35729:35729"

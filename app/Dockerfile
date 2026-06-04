@@ -11,6 +11,15 @@ FROM node:${NODE_VERSION}-alpine
 # Use production node environment by default.
 ENV NODE_ENV production
 
+# NOTE: This Dockerfile uses BuildKit features (the `--mount=type=bind` form in the
+# `RUN` instruction). To build locally you must enable BuildKit, for example:
+#
+#   DOCKER_BUILDKIT=1 docker build -t multi-container-app:dev ./app
+#
+# If you cannot use BuildKit, remove the `--mount=type=bind` / `--mount=type=cache`
+# usages and replace them with standard COPY steps. The current file is optimized
+# for a fast developer rebuild flow when BuildKit is available.
+
 
 WORKDIR /usr/src/app
 
@@ -40,3 +49,29 @@ EXPOSE 3000
 
 # Run the application in dev mode to use with Compose watch feature
 CMD npm run dev
+
+
+# --- Production stage (multi-stage build)
+FROM node:${NODE_VERSION}-alpine AS production
+
+WORKDIR /usr/src/app
+
+# Install only production dependencies for a smaller runtime image
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Copy source
+COPY . .
+
+# Run as non-root
+RUN chown -R node /usr/src/app
+USER node
+
+EXPOSE 3000
+
+# A simple healthcheck (optional, uses /)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 CMD wget -qO- http://localhost:3000/ || exit 1
+
+# Production entrypoint
+CMD [ "npm", "start" ]
+

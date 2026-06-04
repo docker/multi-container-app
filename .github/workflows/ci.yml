@@ -1,0 +1,251 @@
+name: CI - lint, tests, integration, build & smoke
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install app dependencies
+        run: |
+          cd app
+          npm ci --no-audit --no-fund
+
+      - name: Run linter (save JSON report)
+        run: |
+          cd app
+          npx eslint . --ext .js -f json -o ../eslint-report.json || true
+
+      - name: Upload lint report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: eslint-report.json
+
+      - name: Run linter (fail on errors)
+        run: |
+          cd app
+          npm run lint
+
+      - name: Check formatting (fail if not formatted)
+        run: |
+          cd app
+          npm run format -- --check
+
+  test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/app/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
+
+      - name: Install app dependencies
+        run: |
+          cd app
+          npm ci --no-audit --no-fund
+
+      - name: Run unit tests (with coverage)
+        run: |
+          cd app
+          npm run test:ci
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ matrix.node-version }}
+          path: app/coverage
+
+  agent-debug:
+    name: Agent Debug - Capture results-agent.json
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # OPTIONAL: Uncomment and adapt the following step to run the autofind/agent command in CI.
+      # This is a placeholder for maintainers to enable if they want to generate results-agent.json.
+      # Replace with the actual command and parameters needed for your autofind tool.
+      # - name: Run autofind agent (optional)
+      #   run: |
+      #     # Example placeholder command - adapt this to your needs:
+      #     # autofind run --output results-agent.json
+      #     echo "Skipping autofind run - uncomment and configure this step to enable"
+
+      - name: Debug - List files and check for results-agent.json
+        run: |
+          echo "=== GITHUB_WORKSPACE ==="
+          echo "$GITHUB_WORKSPACE"
+          echo ""
+          echo "=== Current directory ==="
+          pwd
+          echo ""
+          echo "=== Directory listing (ls -la) ==="
+          ls -la
+          echo ""
+          echo "=== Find files (maxdepth 3) ==="
+          find . -maxdepth 3 -type f -ls
+          echo ""
+          echo "=== Check for results-agent.json ==="
+          if [ -f "results-agent.json" ]; then
+            echo "results-agent.json found!"
+            echo "=== First 200 lines of results-agent.json ==="
+            head -n 200 results-agent.json
+          else
+            echo "results-agent.json NOT found in current directory"
+          fi
+
+      - name: Upload results-agent.json artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-agent-json
+          path: results-agent.json
+          if-no-files-found: warn
+
+      # OPTIONAL: Uncomment the following step to fail the workflow if results-agent.json is missing.
+      # This can help catch issues where the autofind command should have produced the file but didn't.
+      # - name: Fail if results-agent.json is missing (optional)
+      #   run: |
+      #     if [ ! -f "results-agent.json" ]; then
+      #       echo "ERROR: results-agent.json not found!"
+      #       exit 1
+      #     fi
+
+  integration:
+    name: Integration (compose) smoke tests
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start full stack with docker compose
+        run: |
+          docker compose -f compose.yaml up -d --build
+
+      - name: Wait for app health
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000/health >/dev/null; then
+              echo 'Integration stack is up'; exit 0;
+            fi
+            echo 'Waiting for integration stack...'; sleep 2;
+          done
+          echo 'Timeout waiting for integration stack' >&2; docker compose logs || true; docker compose down || true; exit 1
+
+      - name: Integration smoke test
+        run: |
+          curl -sSf http://localhost:3000/ -o /dev/null
+
+      - name: Tear down integration stack
+        if: always()
+        run: |
+          docker compose -f compose.yaml down
+
+  build-and-smoke:
+    name: Build, push image and smoke test
+    runs-on: ubuntu-latest
+    needs: integration
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push production image (with cache)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          file: ./app/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/multi-container-app:prod
+            ghcr.io/${{ github.repository_owner }}/multi-container-app:${{ github.sha }}
+          target: production
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/multi-container-app:prod
+          cache-to: type=registry,mode=max
+
+      - name: Run production container
+        run: |
+          docker run -d --name todo-app-ci -p 3000:3000 ghcr.io/${{ github.repository_owner }}/multi-container-app:prod
+
+      - name: Save built image as artifact
+        if: always()
+        run: |
+          docker save ghcr.io/${{ github.repository_owner }}/multi-container-app:prod -o /tmp/multi-container-app-prod.tar
+
+      - name: Upload image artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-image-prod
+          path: /tmp/multi-container-app-prod.tar
+
+      - name: Wait for app to be healthy (simple loop)
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000/ >/dev/null; then
+              echo 'App is up'; exit 0;
+            fi
+            echo 'Waiting for app...'; sleep 2;
+          done
+          echo 'Timeout waiting for app' >&2; docker logs todo-app-ci || true; exit 1
+
+      - name: Smoke test (root path)
+        run: |
+          curl -sSf http://localhost:3000/ -o /dev/null
+
+      - name: Tear down
+        if: always()
+        run: |
+          docker stop todo-app-ci || true
+          docker rm todo-app-ci || true

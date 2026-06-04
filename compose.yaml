@@ -16,9 +16,20 @@ services:
       - todo-database
     environment:
       NODE_ENV: production
+      # Make livereload explicit for the container runtime. For containerized
+      # production runs we disable livereload by default to avoid requiring
+      # devDependencies inside the production image.
+      LIVERELOAD: "false"
+      LIVERELOAD_PORT: "35729"
     ports:
       - 3000:3000
       - 35729:35729
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     develop:
       watch:
         - path: ./app/package.json
@@ -29,10 +40,21 @@ services:
 
   todo-database:
     image: mongo:6
-    #volumes: 
-    #  - database:/data/db
+    # By default we use a named volume `database` to persist MongoDB data.
+    # If you want the database files to live on the host (for more storage space
+    # or easier inspection), set the HOST_DB_PATH environment variable when
+    # running Compose. Example:
+    #
+    #   HOST_DB_PATH=/mnt/big-disk/docker-mongo-data docker compose up -d
+    #
+    # The service volume below uses variable substitution: if HOST_DB_PATH is
+    # set it will be bound as a host path, otherwise a named volume `database`
+    # will be created.
     ports:
       - 27017:27017
+    volumes:
+      - ${HOST_DB_PATH:-database}:/data/db
+    restart: unless-stopped
 
-#volumes:
-  #database:
+volumes:
+  database:

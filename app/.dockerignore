@@ -5,7 +5,6 @@
 # https://docs.docker.com/engine/reference/builder/#dockerignore-file
 
 **/.classpath
-**/.dockerignore
 **/.env
 **/.git
 **/.gitignore
@@ -30,5 +29,10 @@
 **/values.dev.yaml
 **/build
 **/dist
-LICENSE
-README.md
+logs/
+*.log
+coverage/
+.DS_Store
+Thumbs.db
+*.swp
+*.bak

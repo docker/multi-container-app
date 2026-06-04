@@ -1,0 +1,35 @@
+{
+  "name": "multi-container-app",
+  "version": "1.0.0",
+  "description": "Multi-container Todo application with Node.js and MongoDB",
+  "private": true,
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "cd app && npm run lint",
+    "format": "cd app && npm run format",
+    "test": "cd app && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dreadwitdastacc-IFA/multi-container-app"
+  },
+  "keywords": [
+    "docker",
+    "compose",
+    "nodejs",
+    "mongodb",
+    "todo"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.0"
+  },
+  "lint-staged": {
+    "app/**/*.{js,ejs}": [
+      "cd app && eslint --fix",
+      "cd app && prettier --write"
+    ]
+  }
+}
