@@ -9,7 +9,7 @@
 # You can add other services your application may depend on here.
 
 services:
-  todo-app:
+  todo-app:docker compose up -d
     build:
       context: ./app
     depends_on:
@@ -27,7 +27,7 @@ services:
           target: /usr/src/app
           action: sync
 
-  todo-database:
+  todo-database:docker compose up -d
     image: mongo:6
     #volumes: 
     #  - database:/data/db
