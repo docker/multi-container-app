@@ -5,10 +5,9 @@ const router = express.Router();
 
 // Home page route
 router.get('/', async (req, res) => {
-
-    const todos = await Todo.find()
-    res.render("todos", {
-        tasks: (Object.keys(todos).length > 0 ? todos : {})
+    const todos = await Todo.find().sort({ created_at: -1 }).lean();
+    res.render('todos', {
+        tasks: todos.length ? todos : []
     });
 });
 
@@ -19,16 +18,15 @@ router.post('/', (req, res) => {
     });
 
     newTask.save()
-    .then(task => res.redirect('/'))
-    .catch(err => console.log(err));
+        .then(() => res.redirect('/'))
+        .catch(err => console.log(err));
 });
 
 // POST - Destroy todo item
 router.post('/todo/destroy', async (req, res) => {
     const taskKey = req.body._key;
-    const err = await Todo.findOneAndRemove({_id: taskKey})
+    await Todo.findOneAndRemove({ _id: taskKey });
     res.redirect('/');
 });
-
 
 module.exports = router;
